@@ -9,54 +9,59 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Data;
 public sealed class MemoryProductCatalog
 {
+	private readonly Lock _sync = new();
 	private readonly List<Product> _products = [];
 	public IReadOnlyList<Product> GetProducts()
 	{
-		return _products.ToArray();
+		lock(_sync)
+		{
+			return [.._products];
+		}
 	}
 	public Product? GetProduct(string productID)
 	{
-		return _products.FirstOrDefault(p => string.Equals(p.ProductID, productID.Trim(), StringComparison.OrdinalIgnoreCase));
+		lock(_sync)
+		{
+			return _products.FirstOrDefault(p => string.Equals(p.ProductID, productID.Trim(), StringComparison.OrdinalIgnoreCase));
+		}
 	} 
 
-	public void CreateProduct(Product product)
+	public bool CreateProduct(Product product)
 	{
-		if (_products.Any(p => p.ProductID == product.ProductID))
+		lock(_sync)
 		{
-			throw new ArgumentException("Product code already exists.");
+			if (_products.Any(p => p.ProductID == product.ProductID))
+			{
+				return false;
+			}
+			_products.Add(product);
+			return true;
 		}
-		_products.Add(product);
 	}
 
-	public void RemoveProduct (string productID)
+	public bool RemoveProduct (string productID)
 	{
-		var product = GetProduct(productID);
-		if (product is not null)
-			_products.Remove(product);
-	}
-
-	public void UpdateProduct(string productID, Product updatedProduct)
-	{
-		var existingProduct = GetProduct(productID);
-		if (existingProduct is not null)
+		lock(_sync)
 		{
-			var index = _products.IndexOf(existingProduct);
+			var index = _products.FindIndex(p => string.Equals(p.ProductID, productID.Trim(), StringComparison.OrdinalIgnoreCase));
+
+			if (index == -1) return false;
+			
+			_products.RemoveAt(index);
+			return true;
+		}
+	}
+
+	public bool UpdateProduct(Product updatedProduct)
+	{
+		lock(_sync)
+		{
+			var index = _products.FindIndex(p => string.Equals(p.ProductID, updatedProduct.ProductID.Trim(), StringComparison.OrdinalIgnoreCase));
+
+			if (index == -1) return false;
 
 			_products[index] = updatedProduct;
+			return true;
 		}
 	}
-
-	// public Product AddProduct(CreateProductDto dto)
-	// {
-	// 	var newProduct = new Product(
-	// 		dto.ProductID.Trim(),
-	// 		dto.Name,
-	// 		dto.Price,
-	// 		dto.Stock
-	// 	);
-
-	// 	_products.Add(newProduct);
-
-	// 	return newProduct;
-	// }
 }

@@ -4,7 +4,7 @@
 GET {{urlBase}}
 
 ###
-GET {{urlBase}}/PR03
+GET {{urlBase}}/PR02 
 
 ###
 POST {{urlBase}}
@@ -12,9 +12,9 @@ Content-Type: application/json
 
 {
     "ProductID": "PR01",
-    "Name": "Monitor",
-    "Price": 200000,
-    "Stock": 13
+    "Name": "Keyboard",
+    "Price": 200040,
+    "Stock": 15
 }
 
 ###

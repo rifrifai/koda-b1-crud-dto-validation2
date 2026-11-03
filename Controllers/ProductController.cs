@@ -5,27 +5,22 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
 using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
 	[ApiController]
 	[Route("api/v1/[controller]")]
-	public sealed class ProductController : ControllerBase
+	public sealed class ProductController(IProductService service) : ControllerBase
 	{
-		private readonly MemoryProductCatalog _catalog;
-		public ProductController(MemoryProductCatalog catalog)
-		{
-			_catalog = catalog;
-		}
+		private readonly IProductService _service = service;
 
 		[HttpGet]
 		[ProducesResponseType(typeof(IReadOnlyList<ProductResponse>), StatusCodes.Status200OK)]
 		public ActionResult<IReadOnlyList<Product>> GetAll()
 		{
-			var products =  _catalog.GetProducts().Select(ProductResponse.FromModel).ToArray();
-
-			return Ok(products);
+			return Ok(_service.GetProducts());
 		}
 
 		[HttpGet("{productID}")]
@@ -33,14 +28,12 @@ namespace API.Controllers
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 		public ActionResult<ProductResponse> GetProduct([FromRoute] string productID)
 		{
-			var product = _catalog.GetProduct(productID);
-			if (product is null)
-				return Problem(
+			var product = _service.GetProduct(productID);
+
+			return product is not null ? Ok(product) : Problem(
 					statusCode: StatusCodes.Status404NotFound,
-					title: "Product does not exist",
-					detail: $"No product was found for ID {productID}"
+					title: "Product does not exist"
 				);
-			return Ok(ProductResponse.FromModel(product));
 		}
 
 		[HttpPost]
@@ -50,13 +43,19 @@ namespace API.Controllers
 		{
 			try
 			{
-				var product = new Product(request.ProductID, request.Name, request.Price, request.Stock);
-				_catalog.CreateProduct(product);
+				var product = _service.Create(request);
 
+				if (product is null)
+				{
+					return Problem(
+						statusCode: StatusCodes.Status400BadRequest,
+						title: "Product ID has already exist"
+					);
+				}
 				return CreatedAtAction(
 					actionName: nameof(GetProduct),
 					routeValues: new {productID = product.ProductID},
-					value: ProductResponse.FromModel(product)
+					product
 				);
 			}
 			catch (ArgumentException e)
@@ -74,19 +73,11 @@ namespace API.Controllers
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 		public IActionResult Delete([FromRoute] string productID)
 		{
-			var product = _catalog.GetProduct(productID);
-
-			if (product is null)
-			{
-				return Problem(
-					statusCode: StatusCodes.Status404NotFound,
-					title: "Product Not Found!",
-					detail: $"No product was not found in ID {productID}"
-				);
-			}
-			_catalog.RemoveProduct(productID);
-
-			return NoContent();
+			return _service.Delete(productID) ? NoContent() : Problem(
+				statusCode: StatusCodes.Status404NotFound,
+				title: "Product Not Found!",
+				detail: $"No product was found in ID {productID}"
+			);
 		}
 
 		[HttpPut("{productID}")]
@@ -96,19 +87,12 @@ namespace API.Controllers
 		public ActionResult<ProductResponse> Update(
 			[FromRoute] string productID, [FromBody] UpdateProductRequest request)
 			{
-				var exitingProduct = _catalog.GetProduct(productID);
-				if (exitingProduct is null)
-				{
-					return Problem(statusCode: StatusCodes.Status404NotFound, title: "Product not found", detail: $"No product was found for ID {productID}.");
-				}
-
 				try
 				{
-					var updateProdek = new Product(productID, request.Name, request.Price, request.Stock);
+					var existingProduct = _service.Update(productID, request);
 
-					_catalog.UpdateProduct(productID, updateProdek);
-
-					return Ok(ProductResponse.FromModel(updateProdek));
+					return existingProduct is null ? 
+					Problem(statusCode: StatusCodes.Status404NotFound, title: "Product not found", detail: $"No product was found for ID {productID}.") : Ok(existingProduct);
 				}
 				catch (ArgumentException e)
 				{
@@ -118,37 +102,5 @@ namespace API.Controllers
 						detail: e.Message);
 				}
 			}
-
-		// [HttpPost]
-		// [ProducesResponseType(typeof(IEnumerable<ProductResponse>), StatusCodes.Status201Created)]
-		// [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-		// public ActionResult<IEnumerable<ProductResponse>> CreateProducts([FromBody] IEnumerable<CreateProductDto> requests)
-		// {
-		// 	var responses = new List<ProductResponse>();
-
-		// 	foreach (var request in requests)
-		// 	{
-		// 		var existingProduct = _catalog.GetProduct(request.ProductID);
-		// 		if (existingProduct is not null)
-		// 		{
-		// 			return Problem(
-		// 				statusCode: StatusCodes.Status400BadRequest,
-		// 				title: "Product Already Exists",
-		// 				detail: $"Product with ID {request.ProductID} already exists. Bulk insert aborted."
-		// 			);
-		// 		}
-
-		// 		var product = _catalog.AddProduct(request);
-				
-		// 		responses.Add(ProductResponse.FromModel(product));
-		// 	}
-
-		// 	return CreatedAtAction(
-		// 		nameof(GetAll), 
-		// 		null, 
-		// 		responses
-		// 	);
-		// }
-
 	}
 }
