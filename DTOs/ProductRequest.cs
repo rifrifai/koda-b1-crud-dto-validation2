@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace API.DTOs;
 public record class ProductRequest(
-    [Required, StringLength(30)]
+    [Required(ErrorMessage = "Product Code wajib diisi."), StringLength(30, ErrorMessage = "Product Code maksimal 30 karakter.")]
     string ProductCode,
 
-    [Required]
-    [StringLength(120)]
+    [Required(ErrorMessage = "Nama produk wajib diisi.")]
+    [StringLength(120, ErrorMessage = "Nama produk maksimal 120 karakter.")]
     string Name,
 
-    [Required]
-    [Range(typeof(decimal), "0", "99999999999.99", ParseLimitsInInvariantCulture = true, ConvertValueInInvariantCulture = true)]
+    [Required(ErrorMessage = "Harga wajib diisi.")]
+    [Range(typeof(decimal), "0", "99999999999.99", ParseLimitsInInvariantCulture = true, ConvertValueInInvariantCulture = true, ErrorMessage = "Harga harus di antara 0 - 99,999,999,999.99.")]
     decimal Price,
 
-    [Required]
-    [Range(0, int.MaxValue)]
+    [Required(ErrorMessage = "Stok wajib diisi.")]
+    [Range(0, int.MaxValue, ErrorMessage = "Stok tidak boleh bernilai negatif.")]
     int Stock,
 
     [Required, StringLength(120)]
