@@ -8,9 +8,9 @@ using API.Models;
 namespace API.Services;
 public interface IProductService
 {
-    IReadOnlyList<ProductResponse> GetProducts();
-    ProductResponse? GetProduct(string productID);
-    ProductResponse? Create(ProductRequest request);
-    ProductResponse? Update(string productID, UpdateProductRequest request);
-    bool Delete(string productID);
+    Task<IReadOnlyList<ProductResponse>> GetAllAsync(CancellationToken ck);
+    Task<ProductResponse?> GetByCodeAsync(string productCode, CancellationToken ck);
+    Task<ProductResponse?> CreateAsync(ProductRequest request, CancellationToken ck);
+    Task<ProductResponse?> UpdateAsync(string productCode, UpdateProductRequest request, CancellationToken ck);
+    Task<bool> DeleteAsync(string productCode, CancellationToken ck);
 }

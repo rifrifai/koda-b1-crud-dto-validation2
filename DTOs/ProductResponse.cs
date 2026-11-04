@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using API.Models;
 
 namespace API.DTOs;
-public sealed record ProductResponse(string ProductID, string Name, decimal Price, int Stock)
+
+public sealed record ProductResponse(string ProductCode, string Name, decimal Price, int Stock, string Category)
 {
-    public static ProductResponse FromModel(Product product) => new(product.ProductID, product.Name, product.Price, product.Stock);
+    public static ProductResponse FromModel(Product product) => new(product.ProductCode, product.Name, product.Price, product.Stock, product.Category);
 }

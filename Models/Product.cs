@@ -6,18 +6,20 @@ using System.Threading.Tasks;
 
 namespace API.Models
 {
-	public sealed class Product(string productID, string name, decimal price, int stock)
+	public sealed class Product(string productCode, string name, decimal price, int stock, string category)
 	{
-		public string ProductID { get; set; } = productID;
-		public string Name { get; set; } = name;
-		public decimal Price { get; set; } = price;
-		public int Stock { get; set; } = stock;
+		public Guid ProductID { get; }
+		public string ProductCode { get; } = productCode;
+		public string Name { get; } = name;
+		public decimal Price { get; } = price;
+		public int Stock { get; } = stock;
+		public string Category { get; } = category;
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 		public DateTime UpdatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
 		public string GetInfo()
 		{
-			return $"ID: {ProductID}, Name: {Name}, Price: {Price}, Stock: {Stock}";
+			return $"ID: {ProductID}, Name: {Name}, Price: {Price}, Stock: {Stock}, Category: {Category}";
 		}
 	}
 }

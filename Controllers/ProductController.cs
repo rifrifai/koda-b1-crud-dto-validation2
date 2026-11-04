@@ -18,17 +18,18 @@ namespace API.Controllers
 
 		[HttpGet]
 		[ProducesResponseType(typeof(IReadOnlyList<ProductResponse>), StatusCodes.Status200OK)]
-		public ActionResult<IReadOnlyList<Product>> GetAll()
+		public async Task<ActionResult<IReadOnlyList<Product>>> GetAll(CancellationToken ck)
 		{
-			return Ok(_service.GetProducts());
+			var products = await _service.GetAllAsync(ck);
+			return Ok(products);
 		}
 
 		[HttpGet("{productID}")]
 		[ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-		public ActionResult<ProductResponse> GetProduct([FromRoute] string productID)
+		public async Task<ActionResult<ProductResponse>> GetByCode([FromRoute] string productCode, CancellationToken ck)
 		{
-			var product = _service.GetProduct(productID);
+			var product = _service.GetByCodeAsync(productCode, ck);
 
 			return product is not null ? Ok(product) : Problem(
 					statusCode: StatusCodes.Status404NotFound,
@@ -39,23 +40,23 @@ namespace API.Controllers
 		[HttpPost]
 		[ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-		public ActionResult<ProductResponse> Create([FromBody] ProductRequest request)
+		public async Task<ActionResult<ProductResponse>> Create([FromBody] ProductRequest request, CancellationToken ck)
 		{
 			try
 			{
-				var product = _service.Create(request);
+				var created = await _service.CreateAsync(request, ck);
 
-				if (product is null)
+				if (created is null)
 				{
 					return Problem(
-						statusCode: StatusCodes.Status400BadRequest,
-						title: "Product ID has already exist"
+						statusCode: StatusCodes.Status409Conflict,
+						title: "Product code has already exist"
 					);
 				}
 				return CreatedAtAction(
-					actionName: nameof(GetProduct),
-					routeValues: new {productID = product.ProductID},
-					product
+					nameof(GetByCode),
+					new { productCode =  created.ProductCode },
+					created
 				);
 			}
 			catch (ArgumentException e)
@@ -68,31 +69,36 @@ namespace API.Controllers
 			}
 		}
 
-		[HttpDelete("{productID}")]
+		[HttpDelete("{productCode}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-		public IActionResult Delete([FromRoute] string productID)
+		public async Task<IActionResult> Delete([FromRoute] string productCode, CancellationToken ck)
 		{
-			return _service.Delete(productID) ? NoContent() : Problem(
+			var deleted = await _service.DeleteAsync(productCode, ck);
+		
+			return deleted ? NoContent() : Problem(
 				statusCode: StatusCodes.Status404NotFound,
-				title: "Product Not Found!",
-				detail: $"No product was found in ID {productID}"
+				title: "Product not found!",
+				detail: $"No product was found for code {productCode}."
 			);
 		}
 
-		[HttpPut("{productID}")]
+		[HttpPut("{productCode}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-		public ActionResult<ProductResponse> Update(
-			[FromRoute] string productID, [FromBody] UpdateProductRequest request)
+		public async Task<ActionResult<ProductResponse>> Update(
+			[FromRoute] string productCode, [FromBody] UpdateProductRequest request, CancellationToken ck)
 			{
 				try
 				{
-					var existingProduct = _service.Update(productID, request);
+					var existingProduct = _service.UpdateAsync(productCode, request, ck);
 
 					return existingProduct is null ? 
-					Problem(statusCode: StatusCodes.Status404NotFound, title: "Product not found", detail: $"No product was found for ID {productID}.") : Ok(existingProduct);
+					Problem(
+						statusCode: StatusCodes.Status404NotFound, 
+						title: "Product not found", 
+						detail: $"No product was found for ID {productCode}.") : Ok(existingProduct);
 				}
 				catch (ArgumentException e)
 				{

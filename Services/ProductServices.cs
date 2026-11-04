@@ -7,28 +7,42 @@ namespace API.Services;
 public sealed class ProductServices(IProductRepository repo) : IProductService
 {
 	private readonly IProductRepository _repo = repo;
-	public ProductResponse? Create(ProductRequest request)
-	{
-		var product = new Product(request.ProductID, request.Name, request.Price, request.Stock);
 
-		return _repo.TryAdd(product) ? ProductResponse.FromModel(product) : null;
+	public async Task<ProductResponse?> CreateAsync(ProductRequest req, CancellationToken ck)
+	{
+		var product = new Product(req.ProductCode, req.Name, req.Price, req.Stock, req.Category);
+		var created = await _repo.TryAddAsync(product, ck);
+
+		return created ? ProductResponse.FromModel(product) : null;
 	}
 
-	public bool Delete(string productID) => _repo.TryDelete(productID);
-
-	public ProductResponse? GetProduct(string productID)
+	public Task<bool> DeleteAsync(string productCode, CancellationToken ck)
 	{
-		var product =_repo.GetById(productID);
+		if (string.IsNullOrWhiteSpace(productCode) || productCode.Trim().Length > 30)
+			return Task.FromResult(false);
+		return _repo.TryDeleteAsync(productCode, ck);
+	}
 
+	public async Task<ProductResponse?> GetByCodeAsync(string productCode, CancellationToken ck)
+	{
+		if (string.IsNullOrWhiteSpace(productCode) || productCode.Trim().Length > 30)
+			return null;
+		var product = await _repo.GetByCodeAsync(productCode, ck);
 		return product is null ? null : ProductResponse.FromModel(product);
 	}
 
-	public IReadOnlyList<ProductResponse> GetProducts() => _repo.GetAllProducts().Select(ProductResponse.FromModel).ToArray();
-
-	public ProductResponse? Update(string productID, UpdateProductRequest request)
+	public async Task<IReadOnlyList<ProductResponse>> GetAllAsync(CancellationToken ck)
 	{
-		var product = new Product(productID, request.Name, request.Price, request.Stock);
-		
-		return _repo.TryUpdate(product) ? ProductResponse.FromModel(product) : null;
+		var products = await _repo.GetAllAsync(ck);
+
+		return products.Select(ProductResponse.FromModel).ToArray();
+	}
+
+	public async Task<ProductResponse?> UpdateAsync(string productCode, UpdateProductRequest req, CancellationToken ck)
+	{
+		var product = new Product(productCode, req.Name, req.Price, req.Stock, req.Category);
+		var updated = await _repo.TryUpdateAsync(product, ck);
+
+		return updated ? ProductResponse.FromModel(product) : null;
 	}
 }

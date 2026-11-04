@@ -7,9 +7,9 @@ using API.Models;
 namespace API.Repository;
 public interface IProductRepository
 {
-    IReadOnlyList<Product> GetAllProducts();
-    Product? GetById(string productID);
-    bool TryAdd(Product product);
-    bool TryUpdate(Product product);
-    bool TryDelete(string productID);
+	Task<IReadOnlyList<Product>> GetAllAsync(CancellationToken ck);
+	Task<Product?> GetByCodeAsync(string productCode, CancellationToken ck);
+	Task<bool> TryAddAsync(Product product, CancellationToken ck);
+	Task<bool> TryUpdateAsync(Product product, CancellationToken ck);
+	Task<bool> TryDeleteAsync(string productCode, CancellationToken ck);
 }
