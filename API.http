@@ -4,27 +4,29 @@
 GET {{urlBase}}
 
 ###
-GET {{urlBase}}/PR02 
+GET {{urlBase}}/PR02
 
 ###
 POST {{urlBase}}
 Content-Type: application/json
 
 {
-    "ProductID": "PR01",
+    "ProductCode": "PR13",
     "Name": "Keyboard",
     "Price": 200040,
-    "Stock": 15
+    "Stock": 15,
+    "Category": "Elektrik"
 }
 
 ###
-PUT {{urlBase}}/PR01
+PUT {{urlBase}}/PR13
 Content-Type: application/json
 
 {
-    "Name": "Book",
-    "Price": 100000,
-    "Stock": 30
+    "name": "Keyboard",
+    "price": 200040.00,
+    "stock": 15,
+    "category": "Elektrik"
 }
 
 ###

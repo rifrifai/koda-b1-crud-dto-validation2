@@ -8,7 +8,7 @@ namespace API.Models
 {
 	public sealed class Product(string productCode, string name, decimal price, int stock, string category)
 	{
-		public Guid ProductID { get; }
+		// public Guid ProductID { get; }
 		public string ProductCode { get; } = productCode;
 		public string Name { get; } = name;
 		public decimal Price { get; } = price;
@@ -19,7 +19,7 @@ namespace API.Models
 
 		public string GetInfo()
 		{
-			return $"ID: {ProductID}, Name: {Name}, Price: {Price}, Stock: {Stock}, Category: {Category}";
+			return $"Product Code: {ProductCode}, Name: {Name}, Price: {Price}, Stock: {Stock}, Category: {Category}";
 		}
 	}
 }

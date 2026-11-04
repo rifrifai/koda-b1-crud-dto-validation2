@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Data;
+// using API.Data;
 using API.DTOs;
 using API.Models;
 using API.Services;
@@ -24,12 +24,12 @@ namespace API.Controllers
 			return Ok(products);
 		}
 
-		[HttpGet("{productID}")]
+		[HttpGet("{productCode}")]
 		[ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<ProductResponse>> GetByCode([FromRoute] string productCode, CancellationToken ck)
 		{
-			var product = _service.GetByCodeAsync(productCode, ck);
+			var product = await _service.GetByCodeAsync(productCode, ck);
 
 			return product is not null ? Ok(product) : Problem(
 					statusCode: StatusCodes.Status404NotFound,
@@ -92,7 +92,7 @@ namespace API.Controllers
 			{
 				try
 				{
-					var existingProduct = _service.UpdateAsync(productCode, request, ck);
+					var existingProduct = await _service.UpdateAsync(productCode, request, ck);
 
 					return existingProduct is null ? 
 					Problem(

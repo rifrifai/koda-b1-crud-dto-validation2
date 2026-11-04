@@ -4,7 +4,7 @@ using API.Repository;
 
 namespace API.Services;
 
-public sealed class ProductServices(IProductRepository repo) : IProductService
+public sealed class ProductService(IProductRepository repo) : IProductService
 {
 	private readonly IProductRepository _repo = repo;
 

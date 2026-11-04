@@ -14,7 +14,7 @@
 --     CONSTRAINT CK_Products_Price CHECK(Price >= 0),
 --     CONSTRAINT CK_Products_Stock CHECK(Stock >= 0),
 -- );
-GO
+-- GO
 
 -- INSERT INTO dbo.Product(ProductCode, Name, Price, Stock, Category)VALUES
 -- ('PR01', 'Keyboard', 25000, 3, 'Elektronik'),
@@ -31,5 +31,5 @@ GO
 -- ('PR011', 'Keyboard Mechanical', 450000, 15, 'Elektronik'),
 -- ('PR012', 'Mouse Wireless', 150000, 20, 'Elektronik');
 
-SELECT * FROM dbo.Product;
-GO
+-- SELECT * FROM dbo.Product;
+-- GO
