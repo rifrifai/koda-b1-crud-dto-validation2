@@ -11,6 +11,8 @@ builder.Services.AddProblemDetails();
 // builder.Services.AddSingleton<IProductService, ProductServices>();
 builder.Services.AddScoped<IProductRepository, SqlProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 var app = builder.Build();
 

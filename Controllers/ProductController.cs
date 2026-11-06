@@ -88,25 +88,25 @@ namespace API.Controllers
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<ProductResponse>> Update(
-			[FromRoute] string productCode, [FromBody] UpdateProductRequest request, CancellationToken ck)
+		[FromRoute] string productCode, [FromBody] UpdateProductRequest request, CancellationToken ck)
+		{
+			try
 			{
-				try
-				{
-					var existingProduct = await _service.UpdateAsync(productCode, request, ck);
+				var existingProduct = await _service.UpdateAsync(productCode, request, ck);
 
-					return existingProduct is null ? 
-					Problem(
-						statusCode: StatusCodes.Status404NotFound, 
-						title: "Product not found", 
-						detail: $"No product was found for ID {productCode}.") : Ok(existingProduct);
-				}
-				catch (ArgumentException e)
-				{
-					return Problem(
-						statusCode: StatusCodes.Status400BadRequest,
-						title: "Invalid product data!",
-						detail: e.Message);
-				}
+				return existingProduct is null ? 
+				Problem(
+					statusCode: StatusCodes.Status404NotFound, 
+					title: "Product not found", 
+					detail: $"No product was found for ID {productCode}.") : Ok(existingProduct);
 			}
+			catch (ArgumentException e)
+			{
+				return Problem(
+					statusCode: StatusCodes.Status400BadRequest,
+					title: "Invalid product data!",
+					detail: e.Message);
+			}
+		}
 	}
 }

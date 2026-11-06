@@ -1,21 +1,21 @@
-@urlBase = http://localhost:5074/api/v1/product
+@urlBase = http://localhost:5074/api/v1/customer
 
 ###
 GET {{urlBase}}
 
 ###
-GET {{urlBase}}/PR02
+GET {{urlBase}}/8
 
 ###
 POST {{urlBase}}
 Content-Type: application/json
 
 {
-    "ProductCode": "PR13",
-    "Name": "Keyboard",
-    "Price": 200040,
-    "Stock": 15,
-    "Category": "Elektrik"
+    "CustomerId": 8,
+    "Name": "Joko",
+    "Email": "joko@mail.com",
+    "Phone": "62888994033",
+    "Address": "jl. acropolis cibubur kab. bogor"
 }
 
 ###
@@ -25,7 +25,7 @@ Content-Type: application/json
 {
     "name": "Keyboard",
     "price": 200040.00,
-    "stock": 15,
+    "stock": 40,
     "category": "Elektrik"
 }
 
